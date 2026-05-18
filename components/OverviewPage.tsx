@@ -91,7 +91,7 @@ export default function OverviewPage({
                 </tr>
               </thead>
               <tbody>
-                {employeeSummary.slice(0, 10).map((e, i) => (
+                {employeeSummary.map((e, i) => (
                   <tr key={e.nv}>
                     <td>{i + 1}</td>
                     <td style={{ fontWeight: 800 }}>{e.nv}</td>
