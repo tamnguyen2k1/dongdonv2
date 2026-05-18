@@ -1,18 +1,5 @@
 import type { BlockType, Order, StatusType } from "@/types/order";
-
-const NV_MAP = [
-  { name: "HẢI", aliases: ["HAI"] },
-  { name: "QUÝ", aliases: ["QUY"] },
-  { name: "DŨNG", aliases: ["DUNG"] },
-  { name: "HIỂN", aliases: ["HIEN"] },
-  { name: "HUY", aliases: [] },
-  { name: "LONG", aliases: [] },
-  { name: "TÂN", aliases: ["TAN"] },
-  { name: "THẮNG", aliases: ["THANG"] },
-
-  { name: "V LUAN", aliases: ["V LUÂN", "V.LUAN", "V.LUÂN", "VAN LUAN", "VĂN LUÂN"] },
-  { name: "T LUAN", aliases: ["T LUÂN", "T.LUAN", "T.LUÂN", "THANH LUAN", "THANH LUÂN"] },
-];
+import { EMPLOYEES } from "../constants/employees";
 
 export function norm(t = "") {
   return t
@@ -23,17 +10,19 @@ export function norm(t = "") {
     .replace(/\s+/g, " ")
     .trim();
 }
-
 export function cleanNV(text?: string) {
   if (!text) return null;
 
   const raw = norm(text);
-  const aliasMatch = text.match(/\((.*?)\)/);
-  const alias = aliasMatch ? norm(aliasMatch[1]) : null;
 
-  for (const nv of NV_MAP) {
-    if (raw.includes(norm(nv.name))) return nv.name;
-    if (alias && nv.aliases.some((a) => norm(a) === alias)) return nv.name;
+  for (const emp of EMPLOYEES) {
+    const keys = [emp.name, ...emp.aliases];
+
+    for (const k of keys) {
+      if (raw.includes(norm(k))) {
+        return emp.name;
+      }
+    }
   }
 
   return null;
@@ -118,41 +107,56 @@ export function statusClass(status?: string) {
 
   return "p-m";
 }
+
+function compactText(s: string) {
+  return s
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function removeCommonWords(s: string) {
+  return s
+    .replace(
+      /(chua[w]? dong|chưa đóng|chua[w]? dan|chưa dán|delay|dang soan|đang soạn|soan hang|soạn hàng)/gi,
+      ""
+    )
+    .replace(/^[-–—:|.\s]+/, "")
+    .replace(/[-–—:|.\s]+$/, "")
+    .trim();
+}
+
 export function splitNVAndNote(raw = "") {
-  const txt = raw.trim();
+  const text = raw.trim();
+  const compact = compactText(text);
 
-  const patterns = [
-    { regex: /^(v\s*\.?\s*lu[aâ]n|v[aă]n\s+lu[aâ]n)\b/i, value: "V LUAN" },
-    { regex: /^(t\s*\.?\s*lu[aâ]n|thanh\s+lu[aâ]n)\b/i, value: "T LUAN" },
+  for (const emp of EMPLOYEES) {
+    const keys = [emp.name, ...emp.aliases];
 
-    { regex: /^(hải|hai)\b/i, value: "HẢI" },
-    { regex: /^(quý|quy)\b/i, value: "QUÝ" },
-    { regex: /^(dũng|dung)\b/i, value: "DŨNG" },
-    { regex: /^(hiển|hien)\b/i, value: "HIỂN" },
-    { regex: /^(huy)\b/i, value: "HUY" },
-    { regex: /^(long)\b/i, value: "LONG" },
-    { regex: /^(tân|tan)\b/i, value: "TÂN" },
-    { regex: /^(thắng|thang)\b/i, value: "THẮNG" },
-  ];
+    for (const key of keys) {
+      const compactKey = compactText(key);
 
-  for (const p of patterns) {
-    const match = txt.match(p.regex);
+      if (!compactKey) continue;
 
-    if (match) {
-      const note = txt
-        .slice(match[0].length)
-        .replace(/^[-–—:|.\s]+/, "")
-        .trim();
+      if (compact.includes(compactKey)) {
+        const note = removeCommonWords(
+          keys.reduce((current, k) => {
+            const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            return current.replace(new RegExp(escaped, "gi"), "");
+          }, text)
+        );
 
-      return {
-        nv: p.value,
-        note,
-      };
+        return {
+          nv: emp.name,
+          note,
+        };
+      }
     }
   }
 
   return {
     nv: "CHƯA ĐÓNG",
-    note: txt,
+    note: text,
   };
 }

@@ -28,7 +28,7 @@ export function calcKpi(dashOrders: Order[]) {
     dan,
     tongNgay: dong + dan,
     tongMa: new Set(dashOrders.map((o) => o.ma)).size,
-    tongNV: new Set(dashOrders.map((o) => o.nv)).size,
+    tongNV: new Set(validOrders.map((o) => o.nv)).size,
   };
 }
 
