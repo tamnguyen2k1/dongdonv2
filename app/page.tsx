@@ -9,7 +9,7 @@ import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import ModalDetail from "../components/ModalDetail";
 import { PAGE_SIZE } from "../constants/warehouse";
-
+import OverviewPage from "../components/OverviewPage";
 import {
   calcBlockChart,
   calcKpi,
@@ -40,48 +40,10 @@ import type {
   StatusType,
   Order,
 } from "../types/order";
-
+import { parseRows } from "../lib/order-utils";
 
 //type SheetsData = Record<string, string[][]>;
-
-const NV_MAP = [
-  { name: "HẢI", aliases: [] },
-  { name: "QUÝ", aliases: [] },
-  { name: "DŨNG", aliases: [] },
-  { name: "HIỂN", aliases: [] },
-  { name: "HUY", aliases: [] },
-  { name: "LONG", aliases: [] },
-  { name: "TÂN", aliases: [] },
-  { name: "THẮNG", aliases: [] },
-  { name: "V LUAN", aliases: ["VAN LUAN"] },
-  { name: "T LUAN", aliases: ["THANH LUAN"] },
-];
-
-
-function norm(t = "") {
-  return t
-    .toUpperCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^A-Z\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function cleanNV(text?: string) {
-  if (!text) return null;
-
-  const raw = norm(text);
-  const aliasMatch = text.match(/\((.*?)\)/);
-  const alias = aliasMatch ? norm(aliasMatch[1]) : null;
-
-  for (const nv of NV_MAP) {
-    if (raw.includes(norm(nv.name))) return nv.name;
-    if (alias && nv.aliases.some((a) => norm(a) === alias)) return nv.name;
-  }
-
-  return null;
-}
+import { calcOverview } from "../lib/overview-calc";
 
 function stType(s?: string): StatusType {
   const v = (s || "").toLowerCase();
@@ -94,9 +56,9 @@ export default function Page() {
   const [page, setPage] = useState<PageKey>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
-
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const {
+      sheets,
       sheetName,
       orders,
       lastUpdate,
@@ -104,6 +66,8 @@ export default function Page() {
       sheetNames,
       changeSheet,
     } = useRealtimeOrders();
+  const overview = useMemo(() => calcOverview(sheets), [sheets]);
+
 
   const [blockFilter, setBlockFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -243,6 +207,8 @@ const modalOrders = useMemo(
   }
 
   const pageTitle =
+    page === "overview"
+    ? "Tổng Quan":
     page === "dashboard"
       ? "Dashboard"
       : page === "orders"
@@ -303,6 +269,19 @@ const modalOrders = useMemo(
 
         <div className="content">
           
+              {page === "overview" && (
+          <OverviewPage
+            totalOrders={overview.totalOrders}
+            totalCodes={overview.totalCodes}
+            totalEmployees={overview.totalEmployees}
+            totalDone={overview.totalDone}
+            totalLabel={overview.totalLabel}
+            totalPending={overview.totalPending}
+            statusSummary={overview.statusSummary}
+            sheetSummary={overview.sheetSummary}
+            employeeSummary={overview.employeeSummary}
+          />
+        )}
           {page === "dashboard" && (
                 <DashboardPage
                   kpi={kpi}

@@ -1,6 +1,6 @@
 import { BLOCKS } from "../constants/warehouse";
 
-type PageKey = "dashboard" | "orders" | "picker";
+type PageKey = "overview" |"dashboard" | "orders" | "picker";
 
 type Props = {
   page: PageKey;
@@ -69,7 +69,19 @@ export default function Sidebar({
       >
         <div className="nav-section">
           <div className="nav-label">Chính</div>
+          <div
+          className={`nav-item ${page === "overview" ? "active" : ""}`}
+          onClick={() => {
+            onPageChange("overview");
+            onCloseMobile();
+          }}
+        >
+          <div className="nav-icon">
+            <i className="fa-solid fa-chart-pie" />
+          </div>
 
+          <span className="nav-text">Tổng Quan</span>
+        </div>
           <div
             className={`nav-item ${
               page === "dashboard" ? "active" : ""

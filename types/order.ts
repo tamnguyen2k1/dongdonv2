@@ -1,4 +1,4 @@
-export type PageKey = "dashboard" | "orders" | "picker";
+export type PageKey = "overview"| "dashboard" | "orders" | "picker";
 export type BlockType = "SPX" | "J&T" | "KHÁC";
 export type StatusType = "dong" | "dan" | "other";
 

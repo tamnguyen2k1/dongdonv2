@@ -128,7 +128,7 @@ function removeCommonWords(s: string) {
 }
 
 export function splitNVAndNote(raw = "") {
-  const text = raw.trim();
+  const text = String(raw || "").trim();
   const compact = compactText(text);
 
   for (const emp of EMPLOYEES) {
