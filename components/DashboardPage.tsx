@@ -188,8 +188,8 @@ export default function DashboardPage({
                   </tr>
                 ) : (
                   nvRows.map((x, i) => {
-                    const pct = Math.round((x.dong / (x.tong || 1)) * 100);
-                    const bw = Math.round((x.tong / maxTong) * 100);
+                    const pct = x.tong ? Math.round((x.dong / x.tong) * 100) : 0;
+                    const bw = pct;
                     const rc =
                       i === 0 ? "r1" : i === 1 ? "r2" : i === 2 ? "r3" : "";
 

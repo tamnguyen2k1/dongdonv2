@@ -89,6 +89,18 @@ export function calcBlockChart(dashOrders: Order[]) {
   return bt;
 }
 
-export function calcProgressPct(dong: number, tongNgay: number) {
-  return tongNgay ? Math.round((dong / tongNgay) * 100) : 0;
+export function calcProgressPct(dashOrders: Order[]) {
+  const total = dashOrders.reduce((s, o) => s + o.so, 0);
+
+  const done = dashOrders
+    .filter(
+      (o) =>
+        stType(o.status) === "dong" ||
+        stType(o.status) === "dan"
+    )
+    .reduce((s, o) => s + o.so, 0);
+
+  return total
+    ? Math.round((done / total) * 100)
+    : 0;
 }

@@ -219,7 +219,7 @@ const modalOrders = useMemo(
   const totalOrderPages = Math.max(1, Math.ceil(orderRows.length / oPageSize));
   const pagedOrders = paginateOrders(orderRows, orderPage, oPageSize);
 
-  const progressPct = calcProgressPct(kpi.dong, kpi.tongNgay);
+  const progressPct = calcProgressPct(dashOrders);
 
   const maxTong = nvRows[0]?.tong || 1;
   const maxBlock = Math.max(...Object.values(blockChart), 1);

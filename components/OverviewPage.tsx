@@ -57,7 +57,6 @@ export default function OverviewPage({
         <KpiBox color="var(--red)" icon="fa-circle-exclamation" label="Chưa Đóng" value={totalPending} sub="chưa có NV" />
       </div>
 
-      <div className="two-col">
         <div className="panel">
           <div className="ph">
             <span className="pt">Tổng Quan Trạng Thái</span>
@@ -104,7 +103,7 @@ export default function OverviewPage({
             </table>
           </div>
         </div>
-      </div>
+      
 
       <div className="panel" style={{ marginTop: 16 }}>
         <div className="ph">
