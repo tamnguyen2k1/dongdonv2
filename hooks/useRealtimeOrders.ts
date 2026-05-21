@@ -3,8 +3,9 @@ import { fetchSheetData } from "../lib/fetch-sheet";
 import { parseRows } from "../lib/order-utils";
 import type { Order, SheetsData } from "../types/order";
 import { REFRESH_MS } from "../constants/warehouse";
+import type { ToastItem } from "../components/Toast";
 
-export function useRealtimeOrders() {
+export function useRealtimeOrders(notify?: (type: ToastItem["type"], message: string) => void) {
   const [sheets, setSheets] = useState<SheetsData>({});
   const [sheetName, setSheetName] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
@@ -23,6 +24,9 @@ export function useRealtimeOrders() {
         if (!mounted) return;
 
         if (hash !== lastHash) {
+          if (lastHash) {
+            notify?.("info", "Dữ liệu sheet vừa thay đổi");
+          }
           lastHash = hash;
 
           const names = Object.keys(data);
@@ -33,11 +37,13 @@ export function useRealtimeOrders() {
           setOrders(parseRows(data[current] || []));
           setLastUpdate(new Date().toLocaleTimeString("vi-VN"));
           setIsOk(true);
+          notify?.("success", "Tải dữ liệu thành công");
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : "Lỗi kết nối";
         setLastUpdate(message);
         setIsOk(false);
+        notify?.("error", message);
       }
     }
 

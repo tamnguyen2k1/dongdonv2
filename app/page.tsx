@@ -40,8 +40,9 @@ import type {
   StatusType,
   Order,
 } from "../types/order";
+import Toast, { type ToastItem } from "../components/Toast";
 import { parseRows } from "../lib/order-utils";
-
+import { useEffect } from "react";
 //type SheetsData = Record<string, string[][]>;
 import { calcOverview } from "../lib/overview-calc";
 
@@ -51,8 +52,36 @@ function stType(s?: string): StatusType {
   if (v.includes("dán")) return "dan";
   return "other";
 }
+const MAINTENANCE = process.env.NEXT_PUBLIC_MAINTENANCE === "true";
 
 export default function Page() {
+   useEffect(() => {
+  if (MAINTENANCE) {
+    window.location.href = "/maintenance";
+  }
+}, []);
+
+  if (MAINTENANCE) {
+    return null;
+  }
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  function notify(type: ToastItem["type"], message: string) {
+    const id = Date.now();
+
+    setToasts((prev) => [
+      ...prev,
+      {
+        id,
+        type,
+        message,
+      },
+    ]);
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3500);
+  }
   const [page, setPage] = useState<PageKey>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -65,9 +94,8 @@ export default function Page() {
       isOk,
       sheetNames,
       changeSheet,
-    } = useRealtimeOrders();
+    } = useRealtimeOrders(notify);
   const overview = useMemo(() => calcOverview(sheets), [sheets]);
-
 
   const [blockFilter, setBlockFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -367,6 +395,15 @@ const modalOrders = useMemo(
         onClose={() => setModalNV(null)}
         onSearch={setModalSearch}
         />
+        <Toast
+          toasts={toasts}
+          onRemove={(id) =>
+            setToasts((prev) =>
+              prev.filter((t) => t.id !== id)
+            )
+          }
+        />
     </div>
+    
   );
 }
