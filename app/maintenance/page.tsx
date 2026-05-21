@@ -36,6 +36,8 @@ const DEFAULT_PARCEL: Parcel = {
   tapeDone: 0,
   labelDone: 0,
 };
+const MAINTENANCE_END = new Date("2026-05-21T23:00:00+07:00");
+
 
 function pickItems(count: number) {
   return [...ITEMS].sort(() => Math.random() - 0.5).slice(0, count);
@@ -78,6 +80,7 @@ function vibrate(ms = 35) {
 
 export default function MaintenancePage() {
   const [parcel, setParcel] = useState<Parcel>(DEFAULT_PARCEL);
+  const [started, setStarted] = useState(false);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [combo, setCombo] = useState(0);
@@ -89,15 +92,37 @@ export default function MaintenancePage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
   const tickRef = useRef<NodeJS.Timeout | null>(null);
+    const [remainText, setRemainText] = useState("");
 
-  useEffect(() => {
-    loadLeaderboard();
-    startGame();
+    useEffect(() => {
+    const timer = setInterval(() => {
+        const diff = MAINTENANCE_END.getTime() - Date.now();
 
-    return () => {
-      if (tickRef.current) clearInterval(tickRef.current);
-    };
-  }, []);
+        if (diff <= 0) {
+        setRemainText("Sắp mở lại hệ thống");
+        return;
+        }
+
+        const h = Math.floor(diff / 1000 / 60 / 60);
+        const m = Math.floor((diff / 1000 / 60) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+
+        setRemainText(`${h}h ${m}m ${s}s`);
+    }, 1000);
+
+    return () => clearInterval(timer);
+    }, []);
+ useEffect(() => {
+  loadLeaderboard();
+
+  return () => {
+    if (tickRef.current) clearInterval(tickRef.current);
+  };
+}, []);
+function handleStart() {
+  setStarted(true);
+  startGame();
+}
 
   async function loadLeaderboard() {
     const data = await getTopScores(GAME_KEY);
@@ -186,7 +211,7 @@ export default function MaintenancePage() {
   }
 
   function packItem(item: string) {
-    if (!running) return;
+     if (!started || !running) return;
     if (parcel.type === "trash") return wrongAction();
     if (parcel.state !== "open") return wrongAction();
 
@@ -212,7 +237,7 @@ export default function MaintenancePage() {
   }
 
   function handleTape() {
-    if (!running) return;
+    if (!started || !running) return;   
 
     if (parcel.type === "trash") return wrongAction();
     if (parcel.state !== "open") return wrongAction();
@@ -238,7 +263,7 @@ export default function MaintenancePage() {
   }
 
   function handleLabel() {
-    if (!running) return;
+     if (!started || !running) return;
 
     if (parcel.type === "trash") return wrongAction();
     if (parcel.state !== "taped") return wrongAction();
@@ -277,7 +302,7 @@ export default function MaintenancePage() {
   }
 
   function skipTrash() {
-    if (!running) return;
+    if (!started || !running) return;
 
     if (parcel.type !== "trash") return wrongAction();
 
@@ -331,6 +356,16 @@ export default function MaintenancePage() {
         </div>
 
         <div className="mission-bar">
+            <div className="maintenance-notice">
+                <div>
+                    <b>🔧 HỆ THỐNG ĐANG BẢO TRÌ</b>
+                    <span>
+                         Đang cập nhật dashboard. Bạn có thể chơi game trong lúc chờ.
+                    </span>
+                </div>
+
+                <strong>{remainText}</strong>
+             </div>
           <div>
             <b>PHIẾU ĐÓNG GÓI</b>
             <span>
@@ -347,6 +382,41 @@ export default function MaintenancePage() {
             {parcel.type === "trash" && "🪱 RÁC/LỖI"}
           </strong>
         </div>
+            <div className="guide-panel">
+    <div className="guide-title">📘 Hướng Dẫn Chơi</div>
+
+    <div className="guide-grid">
+        <div>
+        <b>📋 Nhìn phiếu</b>
+        <span>Kiểm tra các món cần bỏ vào thùng.</span>
+        </div>
+
+        <div>
+        <b>🛒 Lấy hàng</b>
+        <span>Bấm món trên kệ để cho vào thùng.</span>
+        </div>
+
+        <div>
+        <b>🧻 Dán keo</b>
+        <span>Chỉ dán khi hàng trong thùng khớp phiếu.</span>
+        </div>
+
+        <div>
+        <b>🏷️ Dán nhãn</b>
+        <span>Sau khi dán keo xong mới được dán nhãn.</span>
+        </div>
+
+        <div>
+        <b>🗑️ Đơn lỗi</b>
+        <span>Không bỏ hàng, bấm Bỏ Rác.</span>
+        </div>
+
+        <div>
+        <b>⚠️ Sai</b>
+        <span>Thiếu/dư/sai món sẽ mất mạng.</span>
+        </div>
+    </div>
+            </div>
 
         <div className="game-layout">
           <div className="packing-stage">
@@ -443,6 +513,29 @@ export default function MaintenancePage() {
                 <span>🗑️ Bỏ Rác</span>
               </button>
             </div>
+            {!started && (
+                <div className="start-overlay">
+                    <div className="start-card">
+                    <h2>📦 Packing Simulator</h2>
+
+                    <p>
+                        Nhìn phiếu đóng gói, chọn đúng món cho vào thùng,
+                        sau đó dán keo và dán nhãn.
+                    </p>
+
+                    <div className="how-to">
+                        <div><b>1</b> Chọn đúng món trên kệ</div>
+                        <div><b>2</b> Bấm Dán Keo</div>
+                        <div><b>3</b> Bấm Dán Nhãn</div>
+                        <div><b>!</b> Đơn rác thì bấm Bỏ Rác</div>
+                    </div>
+
+                    <button onClick={handleStart}>
+                        BẮT ĐẦU GAME
+                    </button>
+                    </div>
+                </div>
+                )}
 
             {!running && (
               <div className="game-over">
