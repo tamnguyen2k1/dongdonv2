@@ -22,7 +22,6 @@ import {
   calcProgressPct,
 } from "../lib/dashboard-calc";
 
-import { calcPickerRows } from "../lib/picker-calc";
 
 import {
   calcModalStatusTotal,
@@ -40,6 +39,10 @@ import { calcOverview } from "../lib/overview-calc";
 import { useRealtimeOrders } from "../hooks/useRealtimeOrders";
 
 import type { PageKey, StatusType, Order } from "../types/order";
+import {
+  calcPickerRows,
+  calcPickerMonthRows,
+} from "../lib/picker-calc";
 
 const MAINTENANCE =
   process.env.NEXT_PUBLIC_MAINTENANCE === "true";
@@ -109,7 +112,6 @@ export default function Page() {
   const {
     month,
     setMonth,
-    sheets,
     sheetName,
     months,
     orders,
@@ -119,15 +121,16 @@ export default function Page() {
     changeSheet,
   } = useRealtimeOrders(notify);
 
-      const {
+const {
   overviewSheets,
   overviewLoading,
   overviewError,
 } = useMonthOverviewData(
   month,
-  page === "overview",
+  page === "overview" || page === "picker",
   notify
 );
+
 
   const overview = useMemo(
   () => calcOverview(overviewSheets),
@@ -193,6 +196,10 @@ export default function Page() {
     () => calcPickerRows(orders, pickerBlock),
     [orders, pickerBlock]
   );
+const pickerMonthRows = useMemo(
+  () => calcPickerMonthRows(overviewSheets, pickerBlock),
+  [overviewSheets, pickerBlock]
+);
 
   const modalOrders = useMemo(
     () =>
@@ -434,6 +441,7 @@ export default function Page() {
           {page === "picker" && (
             <PickerPage
               pickerRows={pickerRows}
+              pickerMonthRows={pickerMonthRows}
               pickerBlock={pickerBlock}
               maxPicker={maxPicker}
               onPickerBlockChange={setPickerBlock}

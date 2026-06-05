@@ -1,19 +1,9 @@
-type ReadyPackStatRow = {
-  ngay?: string;
-  thang?: string;
-  nhan_vien: string;
-  mat_hang: string;
-  tong_don: number;
-  don_san: number;
-  con_thieu: number;
-  ty_le: number;
-  rows: unknown[];
-};
+import type { ReadyPackGroupRow } from "../../utils/ready-pack-calc";
 
 type Props = {
   mode: "day" | "month";
-  rows: ReadyPackStatRow[];
-  onDetail: (item: ReadyPackStatRow) => void;
+  rows: ReadyPackGroupRow[];
+  onDetail: (item: ReadyPackGroupRow) => void;
 };
 
 export default function ReadyPackStatTable({ mode, rows, onDetail }: Props) {

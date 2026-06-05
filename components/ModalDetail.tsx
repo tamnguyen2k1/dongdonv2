@@ -1,5 +1,5 @@
 import ModalStat from "./ModalStat";
-import { avLt, stType, statusClass } from "../lib/order-utils";
+import { avLt, statusClass } from "../lib/order-utils";
 import type { Order } from "../types/order";
 
 type Props = {
@@ -118,8 +118,6 @@ export default function ModalDetail({
             </div>
           ) : (
             modalOrders.map((o, i) => {
-              const t = stType(o.status);
-
               const pc = statusClass(o.status);
 
               return (

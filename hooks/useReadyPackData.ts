@@ -35,10 +35,13 @@ export function useReadyPackData() {
     }
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+ useEffect(() => {
+  const init = async () => {
+    await loadData();
+  };
 
+  void init();
+}, [loadData]);
   return {
     rows,
     products,

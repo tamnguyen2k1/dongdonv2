@@ -1,11 +1,31 @@
 import type { ReadyPackRate } from "../lib/ready-pack-rate";
 
+export type ReadyPackGroupRow = {
+  ngay?: string;
+  thang?: string;
+  nhan_vien: string;
+  mat_hang: string;
+  tong_don: number;
+  don_san: number;
+  con_thieu: number;
+  ty_le: number;
+  rows: ReadyPackRate[];
+};
+
+type ReadyPackGroupBase = Omit<
+  ReadyPackGroupRow,
+  "con_thieu" | "ty_le"
+>;
+
 export function calcRate(done: number, total: number) {
   if (!total) return 0;
   return Math.round((done / total) * 100);
 }
 
-export function filterReadyPackRows(rows: ReadyPackRate[], keyword: string) {
+export function filterReadyPackRows(
+  rows: ReadyPackRate[],
+  keyword: string
+) {
   const kw = keyword.toLowerCase().trim();
 
   if (!kw) return rows;
@@ -21,25 +41,36 @@ export function filterReadyPackRows(rows: ReadyPackRate[], keyword: string) {
 }
 
 export function getReadyPackKpi(rows: ReadyPackRate[]) {
-  const tongDon = rows.reduce((s, x) => s + Number(x.tong_don || 0), 0);
-  const donSan = rows.reduce((s, x) => s + Number(x.don_san || 0), 0);
+  const tongDon = rows.reduce(
+    (s, x) => s + Number(x.tong_don || 0),
+    0
+  );
 
-  const matHangSet = new Set(rows.map((x) => x.mat_hang || "CHƯA CÓ"));
+  const donSan = rows.reduce(
+    (s, x) => s + Number(x.don_san || 0),
+    0
+  );
+
+  const matHangSet = new Set(
+    rows.map((x) => x.mat_hang || "CHƯA CÓ")
+  );
 
   return {
     tongDon,
     donSan,
-    conThieu: tongDon - donSan,
+    conThieu: Math.max(0, tongDon - donSan),
     tyLe: calcRate(donSan, tongDon),
     tongMatHang: matHangSet.size,
   };
 }
 
-export function groupByDay(rows: ReadyPackRate[]) {
-  const map = new Map<string, any>();
+export function groupByDay(
+  rows: ReadyPackRate[]
+): ReadyPackGroupRow[] {
+  const map = new Map<string, ReadyPackGroupBase>();
 
   rows.forEach((x) => {
-    const key = `${x.ngay}|${x.nhan_vien}|${x.mat_hang}`;
+    const key = `${x.ngay}|${x.nhan_vien}|${x.mat_hang || ""}`;
 
     if (!map.has(key)) {
       map.set(key, {
@@ -52,7 +83,8 @@ export function groupByDay(rows: ReadyPackRate[]) {
       });
     }
 
-    const item = map.get(key);
+    const item = map.get(key)!;
+
     item.tong_don += Number(x.tong_don || 0);
     item.don_san += Number(x.don_san || 0);
     item.rows.push(x);
@@ -60,17 +92,19 @@ export function groupByDay(rows: ReadyPackRate[]) {
 
   return [...map.values()].map((x) => ({
     ...x,
-    con_thieu: x.tong_don - x.don_san,
+    con_thieu: Math.max(0, x.tong_don - x.don_san),
     ty_le: calcRate(x.don_san, x.tong_don),
   }));
 }
 
-export function groupByMonth(rows: ReadyPackRate[]) {
-  const map = new Map<string, any>();
+export function groupByMonth(
+  rows: ReadyPackRate[]
+): ReadyPackGroupRow[] {
+  const map = new Map<string, ReadyPackGroupBase>();
 
   rows.forEach((x) => {
     const month = x.ngay.slice(0, 7);
-    const key = `${month}|${x.nhan_vien}|${x.mat_hang}`;
+    const key = `${month}|${x.nhan_vien}|${x.mat_hang || ""}`;
 
     if (!map.has(key)) {
       map.set(key, {
@@ -83,7 +117,8 @@ export function groupByMonth(rows: ReadyPackRate[]) {
       });
     }
 
-    const item = map.get(key);
+    const item = map.get(key)!;
+
     item.tong_don += Number(x.tong_don || 0);
     item.don_san += Number(x.don_san || 0);
     item.rows.push(x);
@@ -91,7 +126,7 @@ export function groupByMonth(rows: ReadyPackRate[]) {
 
   return [...map.values()].map((x) => ({
     ...x,
-    con_thieu: x.tong_don - x.don_san,
+    con_thieu: Math.max(0, x.tong_don - x.don_san),
     ty_le: calcRate(x.don_san, x.tong_don),
   }));
 }

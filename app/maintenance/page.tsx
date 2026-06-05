@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import "./maintenance.css";
 import { getTopScores, saveGameScore } from "../../lib/game-score";
 
+
 type ParcelType = "normal" | "fragile" | "bulk" | "trash";
 type ParcelState = "open" | "taped" | "done";
 
@@ -18,6 +19,12 @@ type Parcel = {
   labelNeed: number;
   tapeDone: number;
   labelDone: number;
+};
+type LeaderboardItem = {
+  id?: number;
+  player_name: string;
+  score: number;
+  created_at?: string;
 };
 
 const GAME_KEY = "packing_item_match";
@@ -92,7 +99,7 @@ export default function MaintenancePage() {
   const [fx, setFx] = useState<"tape" | "label" | "break" | "trash" | null>(null);
 
   const [playerName, setPlayerName] = useState("");
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
 
   const tickRef = useRef<NodeJS.Timeout | null>(null);
     const [remainText, setRemainText] = useState("");

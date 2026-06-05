@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 
 import {
   createReadyPackRate,
@@ -23,6 +23,7 @@ import {
   getReadyPackKpi,
   groupByDay,
   groupByMonth,
+  type ReadyPackGroupRow,
 } from "../../utils/ready-pack-calc";
 
 import ReadyPackKpi from "./ReadyPackKpi";
@@ -58,7 +59,11 @@ type StatMode = "detail" | "day" | "month";
 export default function ReadyPackRatePage() {
   const { rows, products, loading, lastUpdate, loadData } = useReadyPackData();
 
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(
+    typeof window !== "undefined" &&
+      localStorage.getItem("ready_pack_admin") === "1"
+  );
+
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [adminKey, setAdminKey] = useState("");
 
@@ -75,7 +80,9 @@ export default function ReadyPackRatePage() {
   const [productForm, setProductForm] =
     useState<ReadyPackProduct>(emptyProduct);
 
-  const [detailItem, setDetailItem] = useState<Record<string, any> | null>(null);
+  const [detailItem, setDetailItem] =
+    useState<ReadyPackGroupRow | null>(null);
+
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -84,13 +91,15 @@ export default function ReadyPackRatePage() {
     setTimeout(() => setMessage(""), 2800);
   }
 
-  useEffect(() => {
-    setIsAdmin(localStorage.getItem("ready_pack_admin") === "1");
-  }, []);
-
-  useEffect(() => {
+  function changeKeyword(value: string) {
+    setKeyword(value);
     setPage(1);
-  }, [keyword, statMode]);
+  }
+
+  function changeStatMode(value: StatMode) {
+    setStatMode(value);
+    setPage(1);
+  }
 
   const filtered = useMemo(
     () => filterReadyPackRows(rows, keyword),
@@ -259,8 +268,8 @@ export default function ReadyPackRatePage() {
           keyword={keyword}
           statMode={statMode}
           lastUpdate={lastUpdate}
-          onKeywordChange={setKeyword}
-          onStatModeChange={setStatMode}
+          onKeywordChange={changeKeyword}
+          onStatModeChange={changeStatMode}
           onOpenKey={() => setShowKeyModal(true)}
           onLogout={() => {
             localStorage.removeItem("ready_pack_admin");
@@ -339,11 +348,11 @@ export default function ReadyPackRatePage() {
       )}
 
       {detailItem && (
-  <ReadyPackDetailModal
-    item={detailItem}
-    onClose={() => setDetailItem(null)}
-  />
-)}
+        <ReadyPackDetailModal
+          item={detailItem}
+          onClose={() => setDetailItem(null)}
+        />
+      )}
 
       {showKeyModal && (
         <div className="rpr-modal-bg" onClick={() => setShowKeyModal(false)}>
@@ -351,10 +360,11 @@ export default function ReadyPackRatePage() {
             <div className="rpr-key-icon">🛡️</div>
 
             <h3>Nhập key quản lý</h3>
-            <p>Nhập key để mở chức năng thêm, sửa, xóa.</p>
+            <p>Nhập key để mở chức năng quản lý.</p>
 
             <div className="key-field">
               <label>PIN / KEY</label>
+
               <input
                 type="password"
                 value={adminKey}

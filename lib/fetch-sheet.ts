@@ -7,7 +7,34 @@ export type SheetMonth = {
   active: boolean;
   valid: boolean;
 };
+export type MonthHashResponse = {
+  hash: string;
+  sheets: number;
+  checkedAt: string;
+};
+export async function fetchMonthHash(
+  month?: string
+): Promise<MonthHashResponse> {
+  const params = new URLSearchParams();
 
+  params.set("action", "monthHash");
+
+  if (month) {
+    params.set("month", month);
+  }
+
+  const res = await fetch(api(params), {
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+
+  if (json.error) {
+    throw new Error(json.message);
+  }
+
+  return json as MonthHashResponse;
+}
 function api(params: URLSearchParams) {
   if (!API_URL) throw new Error("Thiếu NEXT_PUBLIC_API_URL");
   params.set("t", Date.now().toString());
