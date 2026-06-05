@@ -1,16 +1,21 @@
 import { BLOCKS } from "../constants/warehouse";
 
-type PageKey = "overview" |"dashboard" | "orders" | "picker";
+
+import type { PageKey } from "../types/order";
+import { PackageCheck } from "lucide-react";
 
 type Props = {
   page: PageKey;
   sidebarCollapsed: boolean;
   ordersLength: number;
   blockFilter: string;
+
   onToggle: () => void;
   onPageChange: (p: PageKey) => void;
+
   onBlockFilter: (v: string) => void;
   onExport: () => void;
+
   mobileMenuOpen: boolean;
   onToggleMobile: () => void;
   onCloseMobile: () => void;
@@ -99,6 +104,21 @@ export default function Sidebar({
 
             <span className="nav-badge">LIVE</span>
           </div>
+          <div
+              className={`nav-item ${
+                page === "readyRate"
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() =>
+                onPageChange("readyRate")
+              }
+            >
+              <span className="rpr-title">
+                <PackageCheck size={16} />
+                Đóng Sẵn
+              </span>
+            </div>
 
           <div
             className={`nav-item ${

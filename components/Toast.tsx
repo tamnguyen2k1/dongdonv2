@@ -1,14 +1,14 @@
 type ToastType = "success" | "error" | "info";
 
 export type ToastItem = {
-  id: number;
+  id: string;
   type: ToastType;
   message: string;
 };
 
 type Props = {
   toasts: ToastItem[];
-  onRemove: (id: number) => void;
+  onRemove: (id: string) => void;
 };
 
 export default function Toast({ toasts, onRemove }: Props) {

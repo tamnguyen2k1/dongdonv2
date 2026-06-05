@@ -1,4 +1,5 @@
 import "./style.css";
+import "../components/ready-pack/ReadyPackRatePage.css";
 
 export default function RootLayout({
   children,

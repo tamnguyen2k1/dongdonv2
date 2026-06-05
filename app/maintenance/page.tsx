@@ -8,7 +8,7 @@ type ParcelType = "normal" | "fragile" | "bulk" | "trash";
 type ParcelState = "open" | "taped" | "done";
 
 type Parcel = {
-  id: number;
+  id: string;
   type: ParcelType;
   state: ParcelState;
   code: string;
@@ -25,7 +25,7 @@ const GAME_KEY = "packing_item_match";
 const ITEMS = ["🧸", "🎧", "⌚", "🦆", "📱", "🎮", "👟", "🧴", "📚", "🧢"];
 
 const DEFAULT_PARCEL: Parcel = {
-  id: 1,
+  id: "default",
   type: "normal",
   state: "open",
   code: "PK-0000",
@@ -42,6 +42,9 @@ const MAINTENANCE_END = new Date("2026-05-21T23:00:00+07:00");
 function pickItems(count: number) {
   return [...ITEMS].sort(() => Math.random() - 0.5).slice(0, count);
 }
+function makeId() {
+  return `${Date.now()}-${crypto.randomUUID()}`;
+}
 
 function createParcel(): Parcel {
   const r = Math.random();
@@ -54,7 +57,7 @@ function createParcel(): Parcel {
   const count = type === "bulk" ? 5 : type === "fragile" ? 2 : 3;
 
   return {
-    id: Date.now() + Math.random(),
+    id: makeId(),
     type,
     state: "open",
     code: `PK-${Math.floor(1000 + Math.random() * 9000)}`,

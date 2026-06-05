@@ -56,13 +56,50 @@ export function parseRows(rows: string[][] = []) {
     nvI: number
   ) => {
     const ma = r[maI];
-    const st = r[stI] || "";
+        const maText = String(ma || "")
+      .trim()
+      .toUpperCase();
+
+    if (
+      maText === "MÃ PHIẾU SOẠN" ||
+      maText === "MÃ ĐƠN" ||
+      maText === "ORDER CODE"
+    ) {
+      return;
+    }
+    const rawStatus = String(r[stI] || "").trim();
+
+    const st =
+      rawStatus.toUpperCase() === "TRẠNG THÁI" ||
+      rawStatus.toUpperCase() === "STATUS"
+        ? ""
+        : rawStatus;
     const nvData = splitNVAndNote(r[nvI]);
 
     const nv = nvData.nv;
     const note = nvData.note;
     const picker = r[pI] ? r[pI].toString().trim() : "";
+    if (
+      picker.toUpperCase() === "PICKER"
+    ) {
+      return;
+    }
+    const invalidStatus = [
+      "",
+      "TRẠNG THÁI",
+      "STATUS",
+      "-"
+    ];
 
+    if (invalidStatus.includes(st.toUpperCase())) {
+      return;
+    }
+    if (
+      ma?.toString().trim().toUpperCase() === "MÃ" ||
+      ma?.toString().trim().toUpperCase() === "MA"
+    ) {
+      return;
+    }
     if (!ma) return;
 
     ma.toString()

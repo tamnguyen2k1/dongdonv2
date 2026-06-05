@@ -27,8 +27,33 @@ export function calcOverview(sheets: SheetsData) {
     { status: string; total: number; count: number }
   >();
 
-  allOrders.forEach((o) => {
-    const key = o.status || "KHÁC";
+ allOrders.forEach((o) => {
+  const raw = (o.status || "").trim();
+
+  if (
+    !raw ||
+    raw.toLowerCase() === "trạng thái" ||
+    raw.toLowerCase() === "status"
+  ) {
+    return;
+  }
+
+  const type = stType(raw);
+
+  const key =
+    type === "dong"
+      ? "Đóng gói"
+      : type === "dan"
+      ? "Dán"
+      : raw.toLowerCase().includes("đã soạn")
+      ? "Đã soạn hàng"
+      : raw.toLowerCase().includes("đơn mới")
+      ? "Đơn mới"
+      : raw.toLowerCase().includes("chờ sản xuất")
+      ? "Chờ sản xuất"
+      : raw.toLowerCase().includes("delay")
+      ? "Delay"
+      : "Khác";
 
     if (!statusMap.has(key)) {
       statusMap.set(key, {
@@ -60,7 +85,7 @@ export function calcOverview(sheets: SheetsData) {
           .reduce((s, o) => s + o.so, 0),
         label: data
           .filter((o) => stType(o.status) === "dan")
-          .reduce((s, o) => s + o.so, 0),
+          .reduce((s, o) => s + o.so, 0),   
         pending: data
         .filter((o) => (o.status || "").toLowerCase().includes("chưa đóng"))
         .reduce((s, o) => s + o.so, 0),
